@@ -1,0 +1,272 @@
+---
+title: "Financial Data Analysis(FDA)/Ders 1"
+author: "Metin TETİK"
+date: "21 03 2022"
+output: pdf_document
+---
+#1. Giriş
+
+#Bu derste ilk önce temel analiz ve tahminler için kullanacağımız R programının tanıtımı ve nasıl kullanacağımıza değineceğiz.
+
+#R dili Auckland Üniversitesinde Ross vd. (1993) tarafından dizayn edilmiş ve sonra Bell Lan'da geliştirilmiştir.
+
+#Bu dille araştırmacılar kendi programlarını yazabiilme ya da varolan programları modifiye etmede kolaylık sunar.
+
+#1.1 R programının avantajları
+
+
+#Diğer programlara göre oldukça geniş bir yelmpazesi var.
+#       -ekonometrik analizdeki tüm paketler mevcut.
+#       -Doğrusal ve doğrusal olmayan zaman serisi analizi, finansal ekonometri, 
+#       -mekansal ekonometri(parametrik ya da non parametrik), 
+#       -Statik ve dinamik panel veri analizi 
+#       -mikro ekonometri ve bayesyen ekonometri
+
+#Başka neler var: Ücretsiz, menü değil koda dayalı, görselleştirme imkanı, 
+#                 Esnek istatistik teknikler, çok kullanıcılı ve dolyısıyla sorulara çok cevap vs.
+
+#1.2 R'ın kurulumu: -R-project.org tıkla ->Download(CRAN) tıkla ->cran.pau.edu.tr yıkla ->base seç->Download(son sürüm)-PC'de çalıştır. 
+#                   -R studio yükle.
+
+#1.3 R'da önemli semboller
+
+#1. R küçük ve büyük harflere duyarlı.
+#2. ">" Bir R satırını gösterir. örnek
+
+        >
+        
+        20+60*4
+        
+        8+5 vs gibi
+        
+#3. "+" sembolu kodun devam ettiğini gösterir. örneğin;
+        
+        dkalskdşldksfşsdkşkifişglsidşlfisdşlfidşlfisşdlfisşdlfisşldiflsişdlifşlsidşlfisdşf+jflksDJlkfjasdşlf+
+          dsajdbasdnaösdajsd
+        
+#4. "#" sembolü bir açıklama için kullanılır. R bu yazılanları çalıştırmaz.
+        
+#5. "<-" sembolü bir ata işlemcisidir. yani= gibi.
+        bahaattin<-2
+        
+        bahaattin
+        
+        2
+        
+#1.4 R'da kullanılan temel komutlar.
+        
+        # ctrl+enter: komutları işlemleri çalıştırmak için kullanılır.
+        # history(): R'da son ana kadar yazılan tüm komutları verir.
+        #ls() ya da object(): çalışma alanında hangi obje ve fonksiyonların saklı olduğu gösterir.
+        #dir() dizin altındaki dosyaları görmek için bu llanılır.
+        #rm() bir obje ya da fonksiyonu silmek için kullanulan komuttur.
+        #rm(list=ls()): çalışma alanındaki tüm obje ve fonksiyonları siler.
+        #ctrl+L R ve edit menüsündeki 1celar console": komut penceresini temizlemek için kullanılır.
+        #q() R programından çıkmak için kullanılır.
+        #Chunk oluşturma: Chunklar R kodlarn girilmesi icin kullanilir ve R kodlarinin ciktisi olusturulan raporda gorunur.
+        #R'da chunk oluşturmak için ctrl+alt+I aynı anda basılır. 
+```{r Örnek 1}
+
+8+4
+
+
+```
+        
+
+#1.5 Yardım dökümanları
+        
+        # help kısmından ya da ? den sonra komut yazarak yardım pencerisi açılabilir.
+```{r Örnek 2}
+?read.table
+```
+        
+        
+      
+#1.6 R'da kütüphane ve paket Yüklenmesi
+        
+        #R'da bir çok kütüphane geliştirilmiştir. İlgili komutlar bu kütüpnelerin içinde yer alır.
+        #komutların çalıştırılması için ilgili kütüpaneye bağlanılması gerekir. Örneğin;
+```{r Örnek 3}
+library(forecast)
+```
+        
+        #Error in library(forecast) : there is no package called ‘forecast’ yazdı 
+        #çünkü bu kütüphane bağlanmak için "install.packages("forecast") komutu çalıştırılmalıdır. 
+```{r Örnek 4}
+install.packages("forecast")   # internet gerekli ve artık yükledikten sonra kütüphaneye bağlanalıabilir.
+library(forecast)
+```
+
+        # İlgili paket yüklendikten  her çalıma dosyanızda paketin yüklenmesine gerek yok ancak
+        #sonra paketin çağrılması için require() komutu kullanılır.
+```{r örnek 5}
+require("forecast")
+```
+        
+        #Yukarıda paketlerin “CRAN” adı verilen bir "merkez" üzerinde bulunur.
+        #Bazı paketler ise “GitHub” üzerinde yer almaktadır. Bu paketleri kullanmak için “devtools” paketi yüklediğimiz takdirde kullanabiliriz.
+```{r örnek 6}
+install.packages("devtools")
+```
+        
+        #Devtools, CRAN ile yükledikten sonra GitHub üzerindeki projeleri, “devtools” ile gelen install_github() fonksiyonu ile indirebiliriz.
+```{r örnek 7}
+library(devtools) #Böyelece Projemize devtools’u dâhil ettik.
+install_github("econwithR/EwR")   # GitHub üzerinde projeyi indirip kurduk.
+library(EwR)
+```
+        
+#1.7  R'da değişkenler.
+        
+        #R'da değişkenler temel olarak sayısal ve sayısal olmayan değişkenler olarak bulunur.
+        #R'da her değişkenin bir ismi olmalı ve bir harfle başlanmalıdır.
+        #Bunun yanında R'da "TRUE" ve "FALSE" değerlerini alabilen mantıksal davranan ikili(boolean) değişken tipi de var. Örnek
+        # ÖRneğin bir regresyon modelinde sabit terim olacaksa intercept=TRUE şeklinde ya da intercept=FALSE şeklinde belirtilebilir.
+        
+#1.8. R'da Nesneler
+        
+        # R'da herşey bir nesnedir. Ancak nesneler farklı türdedir. en temel olanları
+        # vektör, matris, liste, veri çerçevesi(data frame), faktör, fonksiyon
+        
+#1.9 R'da ver çerçeveleri ve veri setlerinin yüklenmesi
+        
+        #Uygulamada kullanılacak veri setleri genellikle veri çerçevesi olarak adlandırılan nesnelerde saklanır.
+        #En sık kullanılan nesnedir.
+        #veri setinin yüklenmesi için en kısa yol data() fonksiyonunu kullanmaktır.
+        #data() fonksiyonunun içersine herhangi bir argüman taımlamadan kullanılarsa "data set" paketinde ne varsa o liste elde edilir.
+        #R'da yüklü olan tüm veri setlerinin listesini elde etmek için "data(package=.packages(all.available = TRUE))" komutu kullanılıor.
+        #Örneğin elimizde bir data seti var. O data seti de EwR adında bir kütüphane içinde olsun. Şimdi ne yapacağız. Önce paket, sonra kütüphane, 
+        #sonra da veri seti kontrolü yapalım.
+```{r örnek 8}
+        install.packages("EwR")
+        library(EwR)
+        data("REcoData")
+```
+       
+        # Veri setinde hangi değişkenler var? adlarını 
+        
+        names(REcoData) #fonksiyonu veri setindeki değişkenleri gösterir.Enviroment kısmında değişken sayısı ve gözlem sayısı olarak belirir. 
+```{r}
+names(REcoData)
+```
+  
+        #Veri çerçevesinin boyutunu(satır ve sütun) görelim.
+        
+```{r}
+dim(REcoData)  # Consol kısmında görüldüğü üzere 112 satır(gözlem) 6 sütun(değişken)
+```
+        # bu veri setinin bir kopyasını kaydetmek istersek;
+        
+```{r}
+save(REcoData, file="C:/Users/gamze/OneDrive/Masaüstü/REcoData.rdata")
+```
+        
+
+#1.10 Dış kaynaklardan veri aktarımı
+        
+        #Metin dosyasından aktarım için  "read.table()"
+```{r}
+read.table()
+```
+        
+        #Virgüllerle ayrılmış bir dosyadan veri aktarımı için "read.csv()"
+        
+```{r}
+read.csv()
+```
+        
+        #Excel formatındaki bir veriyi "read.xlsx" formatında önce paket yüklenip kütüphane çağrılır.
+        
+```{r}
+install.packages("readxl")
+        library("readxl")
+        veri <- read_excel("C:/Users/gamze/OneDrive/Masaüstü/veri.xlsx")
+        View(veri)
+```
+        
+        
+#1.11 Veri setinden değişen çekme
+        
+        #Veri setindeki herhangi bir değişkeni çekip sadece o değişkene ait verileri elde etmek için "$" işareti kullanılır. 
+        
+        #Örneğin veri adındaki verisetindeki sadece i değişkenine ait veriler için aşağıdaki komut kullanılabilir.
+        
+```{r}
+veri$i
+```
+        
+        
+#1.12 R'da Grafikler
+        
+        #Ekonometri'de sıklıkla çizdiğimiz grafiklerden bahsedelim
+        
+#1.12.1 Serpilme çizimi
+        
+        #Veri setindeki tüm değişkenlere ait serpilme çizimi istendiğinde "plot" komutu kullanılır. Örneğin
+        
+```{r}
+   plot(veri)
+```
+     
+        
+        #sadece iki değişken çizdirmek istiyorsak önce hangi değişenler var onları görübtülenir ve sonra o değişkenler bir ad atanır sonra plot edilir.
+        
+        
+```{r}
+        names(veri)
+        
+        ir<-veri$i
+        
+        enfr<-veri$inf
+        
+        gdpt<-veri$gdp
+        
+        plot(enfr, ir)
+```
+        
+        #tüm grafikleri ok işaretleri ile gezebilirsiniz. 
+
+#1.13 Verileri zaman serisi yapma işlemi
+        
+        #Zaman serileri ile analiz yapılacaksa değişkenler tek tek zaman serisi olarak tanıtılmalıdır.
+        #Tabi, bunu durumda elinizedeki verinin frekansını ve başlangıç yılı bilmeniz gerekiyor.
+        #"ts" fonksiyonu ile bu işlem aşağıdaki gibi yapılır. Örnek veri setimiz çeyreklik veri ve 2006 1. çeyrekte başlamaktadır.
+        
+```{r}
+         irts=ts(ir, frequency = 4, start = c(2006,1))
+        enfrts=ts(enfr, frequency = 4, start = c(2006,1))
+        gdptts=ts(gdpt, frequency = 4, start = c(2006,1))
+```
+      
+    #Zaman serisini lışıldık gösterime sokalım. Yapmasak da olur.
+
+```{r}
+irts <- as.xts(irts)                         
+enfrts <- as.xts(enfrts) 
+gdptts <- as.xts(gdptts)
+
+# Ne yaptığımızı kontrol edelim.
+
+irts                         
+enfrts
+gdptts
+```
+
+        
+        # şimdi hepsinin zamana bağlı grafiğini çizelim.
+```{r}
+plot(irts)
+plot(enfrts)
+plot(gdptts)
+```
+        
+        
+#1.14 Grafiklerin kaydedilmesi
+        
+        #grafikleri saklamak için, açık olan grafkte plots kısmına girilir ve farklı olarak istenilen formatta kaydedilir.
+        
+        
+
+
+      
+        
