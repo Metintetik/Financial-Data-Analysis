@@ -1,0 +1,813 @@
+---
+title: "Financial Data Analysis(FDA)/Regression Analysis in Time Series"
+author: "Metin TETİK"
+date: "21 03 2022"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# ECONOMETRIC METHODOLOGY
+
+#1. THEORY: Taylor rule: politika faizi i, inf ve gdp'ye göre ayarlanır.
+
+#2. MATH MODEL: i=f(inf,gdp) yani
+$$\begin{align} i =\beta_0 + \beta_1inf+ \beta_2GDP\end{align}$$
+
+#3. ECONOMETRİC MODEL: i=f(inf,gdp, u) yani
+
+# u nedir? neden var?
+
+$$\begin{align} i =\beta_0 + \beta_1inf+ \beta_2GDP +u_t \end{align}$$
+
+#4. DATA COLLECTION OR SAMPLING
+
+# 1 2 ve 3 gerçek(anakütle) durumunu temsil ediyor. Bu kısımda anakütleyi örnekleme ile tahmin edeceğiz.
+
+#Bu aşamada toplanılan veri özellikle deneysel/anket/ölçek çalışmaları
+için çok önemlidir. #Ancak finansal verilerde veri bize hazır gelir.
+Ancak her frekansta yayınlanan bir veri aslında bir örneklemeyi temsil
+eder. #Çünkü bir çok veri açıklanabilirdi ve bir olasılıkla belirtilen
+frekansta bir veri geldi. #Dolayısıyla anakütle örneklem süreci finans
+için de aynı ancak veri yapılarının kendine özgü sorunları olur.
+
+#Kaç tür veri yapısı var?
+
+#i: Cross section(i)
+
+$$\begin{align} i_i =\beta_0 + \beta_1inf_i+ \beta_2GDP_i +u_i \end{align}$$
+#t: Time series(t)
+
+$$\begin{align} i_t =\beta_0 + \beta_1inf_t+ \beta_2GDP_t +u_t \end{align}$$
+#it: panel data
+
+$$\begin{align} i_{it}=\beta_0 + \beta_1inf_{it}+ \beta_2GDP_{it} +u_{it} \end{align}$$
+#Biz zaman serilerine odaklanacağız.
+
+#5. PARAMETER ESTIMATION(Point)
+
+#PRF ve SRF için şu gösterime bakalım;
+    ```{r}
+knitr::include_graphics("C:/Users/gamze/OneDrive/Masaüstü/prfsrf.png")
+```
+    
+    #Regresyon modellerinin tahmini, Peki ne ile?
+    #OLS, ML, GMM?
+    #ML hata terimi(ya da Y) için vir dağılım bilgisi gerektirir. 
+    #Ancak ML ile OLS eğer hata terimi normal dağılım sergiliyorsa aynıdır.
+    
+    #OLS(ML) SRL'nin gözlem değerlerini en iyi derecede fit edecek noktalardan geçeceğini garanti eder. Ancak;
+    #SRF'nin PRF'ye çok yakın olacağını garanti etmez. Bunun için OLS bazı varsayımları yerine getirmesi gerekir.
+
+#6. HYPOTHESIS TEST
+
+#6.1.Hangi hipotezler?
+
+    #İsatistiksel Hipotezler
+
+#Kullanılan örneklemin tahmin sonuçları ne kadar doğru(Anakütleye ne kadar yakın)? Yinelenen örneklemlerde sürekli değişecek mi? Yani
+
+    #Tahminciler DESTE mi?
+    
+    #DESTE için varsayımlar neler?
+    
+       1. Regresyon modeli parametrelerde doğrusaldır. 
+       2. X değerleri yinelenen örneklemlerde sabittir yani hata teriminden bağımsızdır.
+       3. Hata teriminin ortalaması sıfırdır
+       4. Hata teriminin varyansı sabittir.
+       5. Hata terimleri arasında otokorelasyon yoktur.
+       6. Gözlem sayısı(n), parametre sayısından(k) büyüktür.
+       7. X’lerin değerinde değişkenlik olmalıdır.
+       8. X’ler arasında tam çoklu doğrusallık(Perfect multicollinearity) yoktur.
+       9.Model doğru kurulmuştur.
+       
+       10. Hata Terimi normal dağılmıştır.
+
+#Aralık tahmini/güven aralıkları ve anlamlılık testleri
+
+    #Varsayımlar sağlandığı takdirde DESTE sağlanır.
+
+#7. FORECASTING
+
+# Eğer tüm süreçler iyi gidiyorsa artık 7 ve 8. aşamalara geçebiliriz.
+
+#Öngörü kısımı, Tahmin ettiğimiz model(tarihsel regresyon) ne işe yarayacağını bize gösterir.
+
+#Belirli bir X değeri veri iken, buna karşı gelen ortalama Y’nin gelecek değerini tahmin etmeye/öngörmeye/kestirmeye yarar.
+
+#Bunu nasıl yapar;
+    #1) Ortalama Kestirim(Mean Prediction)
+						#-Nokta Kestirim
+						#-Aralık Kestirim
+    #2) Tekil Kestirim(Individiual Prediction)
+
+
+#8. USING CONTROL AND POLICY IMPLICATION
+
+#UYGULAMA
+
+#1. Teori: Taylor rule: politika faizi i, inf ve gdp'ye göre ayarlanır.
+#2. Matematiksel model: i=f(inf,gdp) 
+#3. Ekonometrik model: t: Time series(t)
+
+$$\begin{align} i_t =\beta_0 + \beta_1inf_t+ \beta_2GDP_t +u_t \end{align}$$
+#4. Veri Toplama: 
+
+```{r}
+require("readxl")
+        library("readxl")
+        veri <- read_excel("C:/Users/gamze/OneDrive/Masaüstü/veri.xlsx")
+  #Verileri tek tek değişken haline getirelim     
+         it<-veri$i
+        inft<-veri$inf
+        gdpt<-veri$gdp
+  #Değişkenleri Zaman serisi yapalım.     
+        its=ts(it, frequency = 4, start = c(2006,1))
+        infts=ts(inft, frequency = 4, start = c(2006,1))
+        gdpts=ts(gdpt, frequency = 4, start = c(2006,1))
+  #Alışıldık formata çevirelim
+        library(xts)
+        its <- as.xts(its)                         
+        infts <- as.xts(infts) 
+        gdpts <- as.xts(gdpts)
+      
+```
+#4.1 Değişkenlerin tanımlayıcı isatistiklerine ve ayrı ayrı scatter çizimlerine bakalım.
+```{r}
+#önce tek tek grafiklerine bakalım
+
+plot(its) 
+plot(infts)
+plot(gdpts)
+
+#sonra tüm serilere tek bir grafikte bakalım.
+
+install.packages("tsbox")
+library(tsbox)
+ts_plot(its, infts, gdpts)
+
+#gdpts ölçek olarak çok büyük olduğu için logaritmik düzeye alalım ve sonra tekrar grafiklere bakalım.
+
+lgdpts<-log(gdpts)
+
+ts_plot(its, infts, lgdpts)
+
+#sonra serilerin ayrı serpilme çizimlerine bakalım
+
+plot.ts(infts, its)
+
+#serilen özet istatistikleri için aşağıdakiler yapılabilir.
+
+install.packages("vtable")
+library(vtable)
+sumtable(data=veri)
+
+```
+
+#5. Tahmin: OLS ile doğrusal modelin nokta tahmini
+
+#öncelikle basit regresyon modeli tahmin edelim.
+
+```{r}
+#lm fonsksiyonu bu işi görüyor. Ancak modele de bir ad atayalım. 
+
+simplemodel<-lm(its~infts)
+summary(simplemodel)
+
+#basit modelin kalıntı ve its yani bağımlı değişkenin tahmin değerlerini elde edelim.
+
+suhat<-simplemodel$residuals
+syhat<-simplemodel$fitted.values
+
+#Grafiklerini çizelim.
+
+ts_plot(suhat, syhat, its)
+
+# basit modelin tüm grafikleri için;
+
+plot(simplemodel)
+
+```
+
+#Şimdi de çok değişkenli regresyon modelini çalıştıralım;
+
+```{r}
+
+#Basit modeli için yaptığımız tüm komutları burada çalıştıralım. 
+multimodel<-lm(its~+infts+lgdpts)
+summary(multimodel)
+uhat<-multimodel$residuals
+yhat<-multimodel$fitted.values
+ts_plot(uhat, yhat, its)
+plot(multimodel)
+
+
+```
+
+#5.1 Aralık Tahmini: OLS ile doğrusal modelin aralık tahmini
+
+#Basit ve çok değişekenli regresyon modeli için aralık tahmini yapalım.
+
+```{r}
+
+#confint fonsksiyonu bu işi görüyor.
+
+confint(simplemodel)
+
+confint(multimodel)
+
+```
+#6 Hipotez testleri
+
+#Öncelikle modelimizin sonuçlarına tekrardan bakalım. Daha sonra tüm parametrelerin anlamlılığını ve modelin anlamlılığını kontrol edelim. 
+#6.1 Normallik testi: Bunun için elbette t, ki kare F testlerine ihtiyaç var ancak bunların kullanulması için modelin hata teriminin normal dağılıp dağılmadığı kontrol etmek gerekiyor. Kalıntıları hata terimi olarak referans alırsak basit bir histogram ve JB test işimizi görecektir.
+
+
+```{r}
+
+# modelin sunumu
+
+summary(multimodel)
+
+#kalınıların dağılım grafiği
+
+hist(uhat)
+
+```
+##JB test: Normal bir dağılımda Skewness=0 kurtosis=3'tür. JB testi bunun üzerine gelişitirilmi ve test istatistiği ki kare'dir. Test 
+
+$$JB=n*[S^2/6 +(K-3)^2/24] ve H_0:JB=0(yani kalıntılar normal dağılmıştır)$$
+#Şİmdi JB testi modelimiz için yapalım.
+
+```{r}
+#Bunun için önce tseries paketi yüklenir ve kütüphane çağrılır. İlgili kod çağrılır.
+install.packages("tseries")
+library(tseries)
+jarque.bera.test(uhat)
+
+```
+#Görüldüğü üzere test istatistiği ve p değerine bakarak H0 hipotezi red edilmemez. Bu durumda hata(kalıntılar) normal dağılmıştır diyebiliriz.
+
+#Sonuç olarak model sunumundaki t ve F değerleri artık güveenilirdir ve yorumlanabilir. Bakalım modelimiz
+
+#Modelimiz diğer varsayımları sağlıyor mu bakalım. 
+
+#6.2 Otokorelasyon testi: DW testi ve BG testi
+
+# Otokorelasyon: Zaman içinde ya da mekan içinde sıralanan gözlem dizilerinin birimler arasındaki ilişkisidir.
+#Otokorelasyon neden ortaya çıkar?
+#A) Süredurum(inertia):Zaman serilerinin çoğunda karşılaşılan durumdur. Diğer adı hareketliliktir. GDP, CPI vs gibi değişkenler dalgalanma sergilerler.(örneğin GDPt+1 GDPt’den yukarıda/aşağıdadır).  Bunların içlerine işlenmiş bir «hızlanma güdüsü» mevcuttur. Bu durumda zaman serisi verilerine ilişkin regresyonlarda ardışık gözlemlerin birbirini etkilemesi olasıdır.
+
+#B) Model kurma hatası: Dışlanmış değişken durumu: Ampirik analizler için mantıklı modellerle(en eksiksiz model) başlamalıyız. Eğer bulgular beklentiler ile örtüşmüyorsa operasyon başlar. Örneğin kalıntıların(u^i’lerin) zamana göre grafiği çizilir ve bir örüntü olup olmadığına bakılır. Eğer varsa bazı değişkenlerin modele katılması gerektiği söyleyebiliriz. Buna dışlanmış değişken model kurma hatası denir. Bu değişkenler modele eklenirse kalıntılar arasındaki ilişki ortadan kaybolur.
+
+#C) Model kurma hatası: Yanlış fonksiyon kalıbı 
+
+#Tarım ürünü arzı bu olguyu yaratır: Arzın kararı ile uygulanmaya konması(üretim süreci) arasında zaman olacağı için, arz fiyata bir dönem gecikmeli tepki verir. 
+
+$$Supply_t=\beta_1 + \beta_2P_{t-1}+ +u_t$$
+#Eğer Pt<Pt-1 ise t+1’deki arz(Supplyt+1) azalır. Tam tersine Pt>Pt-1 ise t+1’de Supplyt+1 artar. O halde ut’lerin rassal olması beklenemez. Çünkü t zamanında Supplyt artarken, t+1 zamanında Supplyt+1 azalır.
+
+#E) Gecikmeler(Lags): Örnek üzerinden gidelim: Tüketimin zaman serisi regresyonu yapılsın.  Tüketim aynı dönemde gelire bağlıdır. Ancak bir dönem önceki tüketimden de etkilenir. Yani;
+$$Tüketim_t=\beta_1 + \beta_2Gelir_t+\beta_3Tüketim_{t-1} +u_t$$
+
+#Çünkü tüketim alışkanlıkları(psikolojik teknolojik vs) hemen değiştirilemez. Yukarıdaki regresyon türüne Autoregression(otoregresyon)(AR(1)) denir.  Eğer consumptiont-1 modele konmaz ise ut consumptiont-1 ‘in etkilerini taşır ve o değiştikçe ut’de düzenli bir örüntü(otokorele ilişki) izler.  
+
+#Önemli: Demek ki zaman serilerinde AR(1) yapısı ya da gecikmenin modelde bulunması çok önemlidir. 
+
+#F) Verilerle oynamak: Ekonometride genellikle biz verilerle oynarız. Örneğin 
+
+    veri düzleştirme(aylık veriyi üç aylık veriye dönüştürme) 
+    interpolasyon(ara değer verme)
+    extrapolasyon(dış değer verme)
+
+#Bu işlemlerin hepsi ut’yi otokorele etme ihtimali doğurur.
+
+#G) Verileri dönüştürmek: Model düzey kalıbında Yt ve Xt log düzeyde ise DYt ve DXt log’daki değişmeyi yani göreli değişmeyi 100 ile çarparsak yüzde değişim(büyüme) anlamına gelir. Bu sebeple araştırmacılar düzey kalıbı yerine birinci fark kalıbı incelemek isteyebilirler.
+
+#Modelin birinci farkı alındığında(birinci farklı kalıbı denir/Aynı zamanda dinamik regresyon modeli de denir(Açıklayıcı değişkenin gecikmeli değerleri olan modeller).
+
+#Böylece veriler dönüştürüldüğünde(birinci fark kalıbı) otokorelasyon sorunu ortaya çıkmaktadır.  
+
+#H) DURAĞAN OLMAMA: Bu konu zaman serileri bölümünde detaylı incelenecek.
+
+#Durağanlık: Bir zaman serisinin,
+
+    Ortalama
+    Varyans
+    Kovaryans
+
+#Momentlerinin zamana bağlı olarak değişmemesi  durumudur.  
+
+#Not 1: Yt ve Xt zaman serisi durağan olmayabilir. Bu durumda ut de durağan değildir(Ancak kalıntı bazen durağan olabilir). Böylece ut durağan değilse aynı zamanda otokoreledir.
+
+#Not 2: Otokorelasyon + ya da – işaretli olabilir. Ancak zaman serilerinde genelde pozitif otokorelasyon görülür.
+
+#6.2. Otokorelasyonun sonuçları
+
+#Eğer ut’de otokorelasyon mevcut ise  parametre tahmincileri DOĞRUSAL VE SAPMASIZ ANCAK ETKİN DEĞİLDİR.
+#Bu durumda hata teriminin varyansları sapmalıdır(olduğundan daha büyük). Parametre varyansları sapmalı daha büyük ve dolayısyla tüm t, F ki-kare testleri, aralık tahminleri değeri yanlıştır. (olduğundan daha küçük)
+
+#6.3.Otokorelasyon tespiti
+
+#6.3.1. Çizim Yöntemi: ut ve ut-1 için bir scatter plot çizlebilir.
+
+```{r}
+#önce hata(kalıntılarımızın) bir gecikmesini alalım
+laguhat<-lag.xts(uhat, k=1)
+#Sonra da hata ve gecikmesi scatter çizelim.
+plot.ts(laguhat, uhat)
+
+```
+#kalıntılar arasında pozitif bir otokorelasyon var mı? tam emin değiliz o halde formel testlere geçelim.
+
+#6.3.2. Durbin-Watson testi
+
+Bu test en çok bilinen ancak her zaman uygulanamayan bir testtir. Şu şekilde hesaplanır.
+
+```{r}
+knitr::include_graphics("C:/Users/gamze/OneDrive/Masaüstü/dw.png")
+```
+
+#D-W Testinin Gerisinde Yatan Varsayımlar 
+
+#Regresyon modeli sabit terim içerir. Açıklayıcı değişkenler kesinlikle olasılıklı değildir. ut hata terimi 1. dereceden O.K dizilimi(ut=rut-1+et) ile türetilmiştir. Dolayısı ile yüksek dereceden O.K testlerinde kullanılamaz. ut’nin normal dağıldığı varsayılır. Bağımlı değişkenin gecikmeli değerleri(Yt-1, Yt-2,…) modelde bulunamaz. Verilerde eksik gözlem yoktur.
+
+#modelimiz için DW testini uygulayalım.
+
+```{r}
+#Bunun için önce lmtest paketi yüklenmelidir.ş için car paketi de kullanılabilir. Sonrada kütüphane çağrılır.
+
+install.packages("car")
+library(car)
+durbinWatsonTest(multimodel)
+```
+#Sonuçlara göre Ho: d=2 hiptezi red edilir ve modelimizde pozitif ve 1. dereceden otokorelasyon bulunmaktadır.
+
+#D-W testinin En Ciddi Sorunu: Varsayımın zaman serilerinde sağlanması genellikle zordur. Bu durumda daha yararlı olan otokorelasyon testlerine geçeriz. Ancak bunlar büyük örneklemlerde geçerlidir. Bunlar;
+#Durbin-h: Ancak aşağıdaki B-G testi Durbin-h’tan daha güçlü olduğu için ona değinmeyeceğiz.
+
+#6.3.3. Breucsh-Goldfrey testi(B-G test)
+
+#Genel Bir Otokorelasyon Testi: Breusch–Godfrey test adımları
+
+#A1) Regresyon modelini tahmin et ve kalıntıları elde et.
+
+#A2) Kalıntıları açıklayıcı değişkenlere ve kalıntıların gecikmeli değerleri üzerine regresyon yapılır. Bu regresyonun R2’si elde edin.
+
+                        #H0=yan regresyon modelinin tüm parametreleri aynı anda sıfıra eşittir.(otokorelasyon yoktur)
+
+#A3) LM test süreci başlar: n çok büyükse(teknik olarak sonsuz) Breusch ve Godfrey şunu göstermiştir; 
+
+                                                #LM=(n-p)R2=ki-karep anlamına gelir.
+
+#A4) Eğer ki-karep> Ki-karetablo ise yani (n-p)R2> kikare tablo ise H0 red edilir. Bu yan regresyon modelinde en az bir ro’nun sıfırdan anlamlı bir şekilde farklı olduğunu bize söyler ve modelde otokorelasyonun olduğu bize gösterir.
+
+#Şimdi modelimiz için BG testini uygulayalım;
+
+```{r}
+#Bunun için önce lmtest paketi yüklenmelidir. Sonrada kütüphane çağrılır.
+
+install.packages("lmtest")
+library(lmtest)
+bgtest(multimodel, order=1)
+bgtest(multimodel, order=2)
+bgtest(multimodel, order=3)
+```
+#İlk sonuçlar LM(kikare) test istatistiğinin 18.164 ve olsaılık değerinin %5'ten küçük olduğunu gösteriyor. Dolayısıyla H0 red elir ve  modelimizde 1. dereceden otokorelasyon vardır. Dahası diğer testler de yapıldığında 2 ve 3. dereceden otokorelasyon vardır.
+
+#6.3.4 Otokorelasyonun Düzeltilmesi: Otokorelasyon modelin tahminden sonra paremetre tahminleri üzerinde olumsuz etkiler meydana getirir. Bu etkilerin düzeltilmesi için
+
+    #1) Genelleştirilmiş en küçük kareler/farklar Yöntemi(GLS)
+    #2) iki aşamalı Durbin yöntemi
+
+#Biz ilkine odaklanacağız.
+
+    #GLS yöntemi: Modelimizdeki değişkenlerin dzüey değerinden bir önceki değerlerinin otokorelasyon katsayısı ile çarpılıp  çıkarılması yöntemidir. Bu durumda hata terimi otokoreasyondan arındırılmış olur.
+
+#Modelimiz için uygularsak;
+
+```{r}
+#Yöntem zaman serileri için çalışmıyor onun yerine veri dosyasındaki data frame üzerinden çalıştırdık.
+library(nlme)
+multimodel_gls<-gls(it~inft+log(gdpt), corr =corAR1(0.9, form = ~ 1))
+?gls
+summary(multimodel_gls)
+
+#şimdi kalıntılar ile tahminler arasındaki ilişkiye bakalım.
+plot(multimodel_gls)
+
+# Alternatif olarak;
+
+uhat_gls<-multimodel_gls$residuals
+yhat_gls<-multimodel_gls$fitted
+plot(yhat_gls,uhat_gls)
+
+#Şimdi kalıntılar arasında bir ilişki kalmış mı bakalım. Önce gls modelinden elde ettiğimiz kalıntıların gecikmesini alalım
+uhat_gls
+laguhat_gls<-lag.xts(uhat_gls, k=1)
+laguhat_gls
+plot.ts(laguhat_gls,uhat_gls)
+
+#iki modelin sonuçlarını kıyaslarsak;
+summary(multimodel_gls)
+summary(multimodel)
+
+#Otokorelasyon katsayısını elde etme
+rho<-lm(formula=uhat~0+laguhat)  #A formula has an implied intercept term. To remove this use either y ~ x - 1 or y ~ 0 + x. 
+summary(rho)
+#Sonra GLS prosedürünü çalıştır.
+rolagits<-0.51*(lag.xts(its, k=1))
+itsstar<-its-rolagits
+rolaginfts<-0.51*(lag.xts(infts, k=1))
+inftsstar<-infts-rolaginfts
+rolaggdpts<-0.51*(lag.xts(gdpts, k=1))
+gdptsstar<-gdpts-rolaggdpts
+glsmodel<-lm(itsstar~inftsstar+gdptsstar)
+summary(glsmodel)
+bgtest(glsmodel, order=2)
+```
+#Sonuç paramtereler  model ortaya çıktı. Daha yüksek örneklem sayısı gerekiyor. Yada Robust LM kullanılabilir.
+
+
+#6.4. Değişen Varyans
+
+#PRF’de görülen ui hata terimlerinin sabit varyanslı, yani veri X’ler değiştikçe hepsinin aynı varyansa sahip olduğunu ileri süren varsayımdır. 
+
+#ui ‘nin Varyansının Değişken Olmasının Nedeni
+
+    #1) Hatasını öğrenen modellerde(insan gibi) davranış hataları zamanla azalır, hata sayıları tutarlı hale gelir yani s2i zamanla azalması beklenir. Bu da bir değişen varyans sorunu yaratır.
+
+    #2) Gelir yükseldikçe insanların gelirlerini kullanabilecekleri seçenekler genişler(örneğin tasarruf seçenekleri artar, şirketler için kar payı daha çok değişkenlik gösterir gibi). Böylelikle gelir artıkça s2i de artar.
+
+    3) Veri derleme/toplama teknikleri geliştikçe sigma2 azalabilir. Örneğin gelişmiş veri derlemeye sahip bir banka, olmayana göre daha az hata yapar. 
+    
+    #4 Dışadüşen(outlier) varlığının bir sonucu olarak değişen varyans sorunu ortaya çıkabilir.
+    
+    5. KDRM 9. varsayımının yani model doğru kurulmuştur varsayımının çiğnenmesi bu soruna yol açabilir.
+    #6-Değişen varyans çoğu zaman önemli bir değişkenin modelden dışlanması ile olabilir.
+    #-Çünkü bu değişkenin etkileri hata teriminde ortaya çıkmaktadır.(alıştırma 8.32)
+
+    #6. Modele katılmış değişkenlerin birinde ya da bir kaçında olan çarpıklık.
+    #- Gelir, servet, eğitim vb gibi iktisadi değişkenlerin çoğu mesela gelir ve servet toplumun tepe noktasındaki az kişinin sahip        olduğu bir değişkendir. Dolayısıyla gelir ve servet dağılımları eşit değildir çarpıktır.
+    #7. Başka nedenler; David Hendry 
+        #a)Yanlış veri dönüştürmesi(oran ya da birinci fark dönüştürmesi)
+        #b)Yanlış fonksiyon kalıbı	
+        
+        SONUÇ OLARAK
+        
+        #-Değişen varyans sorunu genellikle yatay kesit verilerde ortaya çıkar.
+        #-Kesit verilerde zaman içinde bir noktada, tüketici, şehir, il, ülke gibi farklı yapılara sahip birimlerle ilgilenir. 
+        #-Bu birimler küçük  orta büyük firma ya da düşük yüksek gelir gibi değişik büyüklüklere sahip olabilir.
+        #-Bundan dolayı bu sorunla karşılaşabilir.
+        
+        #-Zaman serilerinde ise değişkenler benzer büyüklükte olma eğilimindedir. Çünkü genellikle «aynı birimin» zaman içindeki                   verileri derlenir.
+        #-Örnek:  Türkiye’ye ait GDP ve  INF verisi. 
+        #-Birim aynı dolayısıyla genellikle beklenmez.
+
+#6. KDRM varsayımları varken OLS tahmincileri DESTE idi. Peki bu varsayım ihlal edildiğinde ne görüyoruz? OLS tahmincileri DESTE mi hala?
+
+        #paramterrelerin OLS tahmincisi Hala doğrusal ve Sapmasız. Ancak varyansı artar yani OLS t.e. artık etkin değil.
+
+#Değişen Varyans Varolup Olmadığını Aramak
+
+    #Sorunun Niteliği: Xi  değiştikçe kalıntı varyansları(var(u^t))(Elimizde hata terimi yok dolayısyla sorun düşünsel ampirik bir soruna dönüşüyor.) değişiyor mu değişmiyor mu?
+
+# 6.4.1 Informal Yöntem: Çizim Yöntemi: Değişen varyansın niteliğine ilişkin önsel ya da ampirik bilgi yoksa bakılır. :Regresyon sabit varyans varsayımı altında yapılır.Regresyon kalıntı karelerinin(u^t2) Y^i ya da Xt ye göre serpilmesi(scatter) çizildiğinde düzenli bir örüntü sergileyip sergilemediğine bakılır.
+
+```{r}
+summary(multimodel)
+varuhat<-uhat*uhat
+plot.ts(varuhat)
+#Tek tek x'ler üzerine plot edelim
+plot.ts(infts, varuhat)
+plot.ts(gdpts, varuhat)
+#Ancak en iyisi fathmin ettiğimiz its üzerine regrese etmektir çünkü y^=f(Xt...)
+plot.ts(yhat, varuhat)
+```
+#Biçimsel olarak karar veremediğimizde formel yöntemlere karar verilebilir.
+
+#6.4.2: Formel Yöntemler: BPG testi/White testi, Koenker-Basset testi
+
+#White Testi
+
+#Adımları;
+#1.Regresyon modeli tahmin edilir ve regresyon kalıntıları elde edilir.
+#2.Sonrasında kalıntıların kareleri elde edilerek X’ler üzerine aşağıdaki gibi bir yan(auxillary) regresyon tahmin edilir.
+
+    #Not: Sabit terim mutlaka olmalı. Ayrıca bu model daha yüksek dereceden de genişletilebilir.
+
+#3. Değişen varyansın olmadığı H0 hipotezi altında yan regresyondan elde edilen R2 ile örneklem büyüklüğü n ile çarpılır (Bu çarpım bir c2sd dağılımı gösterir.)(bu örnekte sd:5)
+
+#4. H0: Yan regresyon paramerterleri aynı anda hepsi sıfırdır./Değişen varyans yoktur.
+
+    #Yan regresyondan elde edilen ki-kare değeri kritik değeri aşıyor ise sonuç değişen varyansın olduğu yönündedir(vice versa).
+    
+```{r}
+library(lmtest)
+bptest(multimodel)
+
+# Ya da
+bptestuhat<-lm(varuhat~infts+gdpts+infts^2+gdpts^2)
+summary(bptestuhat)
+```
+#Sonuçlar modelimizde değişen varyans olmadığını gösteriyor.
+
+#KB test
+
+#Bu test metodu, u^t2’yi Xt’lere göre değil Y^t’ye göre regrese eder. Adımları şu şekildedir;
+
+#Adımları
+#1.Özgün regresyon modeli tahmin edilir ve kalıntılar elde edilir.
+#2.Yan regresyon tahmin edilir.
+#3. Aşağıdaki hipotez kurulur ve t yada F testi yaklaşımı ile hipotez sınanır.
+				H0:a2=0(Yan regresyon parametre değeri sıfırdır./Değişen varyans yoktur.)
+#Not: Model log-log formda ise u^t2’yi  log(Y^t)2 üzerine regrese edilmelidir.
+#Not 2: KB testinin bir avantajı hata terimi normal dağılmasa da uygulanabilir. 
+
+```{r}
+#Bu test R'da yazılmamış ancak kendimiz hemen yapabiliriz.
+
+KBtest<-lm(varuhat~yhat^2)
+
+summary(KBtest)
+
+
+```
+#t yada F testi sonuçları modelde hata terimi varyansı ile açıklayıcı değişkenlerin ilişkisiz olduğunu yani değişen varyans olmadığını göstermektedir.
+
+
+#ARCH Testi
+
+#Bu test özellikler otokorelasyon için kullanılmakla birlikte zaman serilerinde hata teriminin varyansının zamana bağlı olarak sabit olup olmadığı ile ilgilidir.
+
+#Engle tarafından geliştirilen bu test ARCH modellerine dayanır. 
+#Bu testin özü hata terimlerinin varyansının deçmiş dönem hata terimi kareleri ile ardışık ilişkili olduğu üzerine kuruludur.
+#Test adımları
+#1 Temel model tahmin edilir.
+#Kalıntılar elde edilir.
+#kalıntı karelerin kareleri(hata terimi varyansı) ile gecikmeli(1'den p'ye kadar olabilir) değerleri üzerine regrese edilir.
+#Yan regresyon için LM testi uygulanır. Eğer model anlamlı ise(H0: Model tüm parametreleri aynı amda sıfırdır/ARCH etkisi yoktur) yani H0 red edilirse model ARCH etkisi vardır denir.
+
+```{r}
+install.packages("fDMA")
+library(fDMA)
+archtest(residuals(multimodel))  #ya da
+archtest(uhat) 
+
+```
+#Test istatisiği 4.09 ve olasılık değeri %5'ten küçük olduğu için H0 red edilir ve ARCH etkisi vardır denir.
+
+#6.4.3 Değişen varyansın düzeltilmesi
+
+#1. LOG dönüştürme Değişen varyansın düzeltimesi için değişkenlerin tümü logaritmik düzeyde çalıştırılabilir. Bu uygulama değişen varyans sorununu ortadan kaldırabilir. Log dönüştürme işlemi, değişkenlerin ölçüldüğü ölçeği daraltır.  Yani iki değişken arasındaki 10 katlık fark 2 katlık farka iner(örn: ln80=4.32 iken ln8=2.07) Bir başka iyi yanı parametre tahminleri artık Y’nin X’e göre esnekliğini ölçmesidir. Bu sebeple ekonometrik modellerde log dönüştürmesi epey yaygındır.
+
+
+#2. WLS ya da bir bakıma GLS ile model tahmin edilir. σ^2t biliniyorsa değişen varyansın en kolay düzeltme yolu WLS(GLS) yöntemidir. Bu yolla elde edilen tahminciler DESTE özelliğine sahiptirler.
+
+#WLS metodu
+
+#Gerçek σ^2t nadiren bilindiği için, değişen varyans olsa bile OLS tahmincilerinin varyansları ve kovaryanslarına ilişkin tutarlı (istatistiksel anlamda) tahminler elde etmenin bir yolu vardır.
+
+#White, bu tahminin gerçek(anakütle) parametre değerleri hakkında asimptotik olarak geçerli istatistiksel çıkarımlar yapılabileceğini göstermiştir (yani büyük örneklemlerde). Günümüzde, birkaç bilgisayar paketi White’ın değişen varyansı düzeltilmiş varyanslarını ve standart hataları, OLS varyansları ve standart hatalar ile birlikte sunmaktadır.  Bu arada, White’ın değişen varyansı düzeltilmiş standart hataları Robust/Dirençli/Berk/Sağlam standart hatalar olarak bilinir.
+
+```{r}
+#ui varyansının, Yi'nin ortalama değerinin karesi(Eut)^2=σ(E(Yt))^2)  ile doğru orantılı olduğuna inanılıyorsa, orijinal model E(Yt) oranlanarak değişen varyans ortadan kaldırılabilir.
+#Ancak bu uygulanabilir değildir. Çünkü E(Yt) bilinmeyen b1 ve b2 ye bağlıdır. Bunun yerine E(Yt)‘nin tahmincisi(Y^t yani Yhat) olan kullanılır ve 
+#O halde temel modelde değişen varyansı göz ardı edip ilk olarak OLS ile tahmin edilir dönüşüm işlemi yapılır;
+summary(multimodel) #buradan uhat, varuhat, yhat çekilir.
+plot.ts(varuhat, yhat^2)
+
+#Eğer ilişki varsa (ki bizim modelde KB testi yok diyordu) WLS uygulanır.
+
+itsstarw<-its/yhat
+inftsstarw<-infts/yhat
+gdptsstarw<-gdpts/yhat
+summary(lm(itsstarw~inftsstar+gdptsstarw))
+#ya da
+WLSmodel<-lm((its/yhat)~(infts/yhat)+(gdpts/yhat))
+summary(WLSmodel)
+
+```
+#Modelde varsa değişen varyans sorunu çözüldü.
+
+#6.5. Çoklu Doğrusallık(Multicollinearity)
+
+    #Ragnar Frisch bu terimin(multicollinearity) mucididir. Bu problem önceden k değişkenli bir regresyonda bütün ya da bazı açıklayıcı değişkenler arasında «tam/kesin/perfect» doğrusal ilişki anlamına geliyordu;
+
+    #Bugün ise, çoklu doğrusallık terimi açıklayıcı değişkenler arasında «tam olmayan» bir ilişkiyi de dikkate alan geniş bir anlamda kullanılır. 
+
+    #Önemli Not: Çoklu doğrusallık X değişkenleri arasında yalnızca doğrusal ilişkiler anlamındadır.  Örneğin çok terimli(değişkenli değil) regresyon modelinde, X’ler karesel olarak modelde ise açıklayıcı değişkenler aynı ve dolayısıyla ilişkidir, ancak bu ilişki doğrusal değildir. Böylece bu varsayım ihlal edilmiş olmaz.
+
+#Çoklu doğrusallık neye sebep olur?
+
+    #Çoklu Doğrusallık Tam ise(Perfect Multicollinearity); Bu durumda beta ’ların tahminleri belirsiz olup, std hataları sonsuz olur.
+    #Çoklu Doğrusallık Tam/Kesin Değil ise(Imperfect Multicollinearity);Bu durumda betaların ’ların tahmin edilebilir ancak std hataları çok yüksek olur. Bu da b’ların hassas(kesin yada doğru) tahmin edilmediği anlamına gelir.
+    
+#Çoklu Doğrusallık Hangi Etmenlerden Dolayı Ortaya Çıkar?
+
+    #1. Kullanılan Veri Derleme Yöntemi: X’lerin anakütleden aldıkları değerlerin sınırlı bir aralığında örneklem alma. (çok dar bir X gözlem aralığından kasıt, Xi: 1,2,3,1,2,3,1,2,1,...,2 gibi)
+
+    #2. Modeldeki ya da Örneklemdeki Sınırlamalar:  Örneğin X2:gelir, X3:konut büyüklüğü, Y:elektrik tüketimi tanımlayan değişkenler olsun
+          #Bu durumda şunu diyebiliriz: Yüksek gelirli aileler büyük boyutlu konutlarda yaşar. Bu durum anakütle içinde fiziksel bir sınırlama yaratır.
+    #3. Model Kurma: Özellikle X değişken aralığı darken(1 gibi) modele X2 gibi değişkenler eklemek.
+    #4. Aşırı Belirlenmiş Bir Model: n<X durumu 
+          #-Örneğin; az sayıda hasta üzerinde yapılan çok sayıda değişkene sahip regresyon modeli üzerindeki sağlık araştırmaları.
+
+    #Önemli:* Zaman Serilerinde Yarattığı Problem: X’ler genellikle ortak bir trend içinde olurlar(GDP, nüfus, Tüketim vs). Genellikle aynı hızda büyür/azalırlar. Trendden arındırılmadıkça bu da çoklu doğrusallığa sebebiyet verir.
+
+#Çoklu Doğrusallığın Doğurduğu «Teorik» Sonuçlar: Gereksiz Şamata mı?
+
+#Çoklu Doğrusallığın Doğurduğu Teorik Sonuçları;
+
+    #OLS t.e’leri sapmasızlık özelliğini hala korur
+    #OLS t.e’leri etkinlik özelliğini hala korur
+    #Bu sorun temelde örnekleme olgusudur.
+    
+    #Sonuç: OLS t.e’leri DESTE olmasına rağmen içimiz rahatlamıyor.
+    
+#Çoklu Doğrusallığın «Uygulamada» Doğurduğu Sonuçlar:
+
+    #OLS t.e’leri hala DESTE ancak, var(b^j)’lar ve cov(b^j b^s ) çok yüksek olduğu için hassas tahmin(kesin) güçleşir.
+
+    #Yukarıdaki sebepten dolayı güven aralıkları çok geniş olma eğilimindedir. Bu da H0: b^j=0 hipotezlerini kabul etme eğilimini artırır.(yani parametre tahminleri istatistiksel olarak anlamsız hale gelir)
+    #Yukarıdaki sebepten dolayı bir ya da birden çok parametrenin t değerleri anlamsız olur.
+
+    #t değerleri anlamsız olmasına rağmen R2 çok yüksek olur(Çok net bulgu)
+
+    #OLS t.e’lerinin std hataları verilerdeki küçük değişimlere çok duyarlı hale gelir.
+
+#Çoklu Doğrusallığın Tespiti
+
+    #Yukarıdaki tespitler çoklu doğrusallıktan şüphe duymamıza sebep olur. Ancak formel olarak; Varyans şişirme çarpanı(Variance Inflation Multiplier/Factor kısaca VIF) ile tespit edilebilir.
+    
+    #Uygulamada VIF değeri 5'ten (bezen 10) küçük olduğunda çoklu doğrusallık olduğuna karar verilir.
+    
+#uygulama    
+```{r}
+library(car)
+vif(multimodel)
+```
+#Değişkenlerin VIF değerleri 5'ten küçük oluğu için çoklu doğrusallık olmadığına karar verilir.
+
+#Deneysel uygulama
+
+```{r}
+#Açıklayıcı değişkenle tam olmayan bir çoklu doğrusal ilişkye sahip bir değişken yaratalım
+x2=inft*2+rnorm(64, 0, 1) 
+#şimdi bir model tahmin edelim
+multicolmodel<-lm(its~infts+gdpts+x2)
+#şimdi VIF değerlerine bakalım
+vif(multicolmodel)
+summary(multicolmodel)
+```
+    #Sonuçta x2 değişkeni VIF değeri 5'ten büyük ve sonuçlar güvenilmez denebilir.
+
+#6.6. Ekonometrik Modelleme: Model Kurma(Specifacition) ve Tanı Koyma Testleri(Diagnostic Tests)
+
+    #KDRM 9. varsayımı «analizde kullanılan regresyon modelinin «doğru» kurulduğu üzerinedir.
+
+    #Model doğru kurulmamış ise
+    #Model kurma hatası(model specifaction error)
+    #Model kurma sapması(model specifaction bias)  düşmüş oluruz.
+
+    #Aslında şu söz çok önemli «doğru model kaf dağının arkasındadır» Dolayısı ile bu bölümde biz bu varsayıma eleştirel gözle bakacağız.
+    
+#Ekonometrik modellemede şu sorulara odaklanmakta fayda vardır.
+    #1. Doğru model nasıl bulunur? Ampirik analizlerde bir model seçmenin kriterleri nelerdir?
+    #2. Uygulamada ne tür model kurma hataları ile karşılaşma olasıdır?
+    #3.Model kurma hatalarının doğurduğu sorunlar nelerdir?
+    #4.Model kurma hatalarını nasıl teşhis ederiz? Tanı koyma araçları nelerdir?
+    #5.Model kurma hatası bulursak hangi düzeltme yolları kullanılabiliriz? Yararları nelerdir?
+    #6.Rakip modellerin başarısı nasıl değerlendirilir?
+
+#Bu kısım Hendry ve Richard(The Econometric Analysis of Economic Time Series)’a göre Ampirik analiz için seçilen model aşağıdaki kriterleri karşılamalıdır:
+
+    #1. Model verileri kabul edebilmeli: Yani modeldeki tahmin değerleri mantığa uygun olmalı
+    #2. Model teori ile uyumlu olmalı: Örnek olarak «Milton Friedman’s permanent income hypothesis»:  PC=f(PI) regrese edilirse sabit terimin sıfır olması beklenir.
+    #3. Modeldeki açıklayıcı değişkenler olabildiğince dışsal olmalı: Yani ui ile Xi’ler ilişkisiz olmalı.
+    #3. Modelin parametre tahminleri değişmezlik göstermeli: Yani katsayı değerleri(yinelenen tahminlerde) stabil/kararlı/istikrarlı: olmalıdır. Eğer bu sağlanamaz ise kestirimler(forecasting) güvenilmez olur. Friedman: «Bir modelin güvenirliği için en uygun testin yapılan kestirimler ile gerçek değerlerin kıyaslanmasından geçer» der.
+    #5. Model verilere uyum göstermeli: Modelin tahmin ettiği kalıntılar tamamıyla rassal(White noise) olmalı. Yani; 
+        #Regresyon modeli yeterli ise kalıntılar saf rassal(White noise) olur.
+        #Eğer regresyon modeli yanlış kurulmuş ise bu sağlanamazç(buna bakacağız)
+    #6. Model kapsayıcı olmalı: Model rakip modellerin sonuçlarını da açıklayabilmeli. Yani model, sonuçlarını açıklayabilme anlamında tüm rakip modelleri kapsamalı 
+
+
+    #“İyi” bir modelin kriterlerini listelemek ile iyi bir model geliştirmek başka bir şeydir.
+    #Çünkü pratikte bir sonraki bölümde tartışacağımız çeşitli model spesifikasyon hatalarını işlemek mümkündür.
+
+#Model Kurma Hataları Türleri
+
+#1. Modelden gerekli bir değişkeni çıkarma(dışlama hatası/ommiting relevant variable): 
+#2. Modele gereksiz/ilgisiz bir değişkeni(irrevelant variable) ekleme: 
+#3. Yanlış Fonksiyon Kalıbı Kullanma:
+#4. Ölçme Sapması Hatası(errors of measurment bias): 
+
+#Modelden gerekli bir değişkeni çıkarma ve 2. Modele gereksiz/ilgisiz bir değişkeni(irrevelant variable) ekleme hatası testleri: RAMSEY-RESET testi
+
+#Ramsey RESET testinin temel mantığı : Y^i’yi bir şekilde modele açıklayıcı değişken olarak sokarak Yeni modelin(Auxilary reg. Mod.) R2’si istatistiksel olarak anamlı bir şekilde yükseliyorsa Model yanlış kurulmuştur.
+
+#Ramsey RESET Adımları
+    #1. Temel(yanlış kurulduğundan şüphelenilen) modeli tahmin edip  Y^i ‘leri elde et.
+    #2. Y^i’yi bir şekilde(kalıntılar ile ilişkisine bağlı olarak, modele ek açıklayıcı değişken olarak dahil et(genellikle Y^'lerin kuvvetleri) ve modeli tahmin et.
+    #3.İlk modelin R2’si (R2old) ve yeni modelin R2’sini (R2new) kullanarak bunların arasında anlamlı bir fark olup olmadığını sınırlandırılmış F testi ile test et.
+    #4. Eğer F>Ftablo ise(yeterince büyükse) yeni modelin (Auxilary reg. Mod.) R2’sinde (R2new) ortaya çıkan artış istatistiksel olarak anlamlı demektir. O halde modelin yanlış kurulduğunu ileri süren hipotezi kabul ederiz
+    
+#Uygulama
+
+.
+```{r}
+resettest(simplemodel, power=2:4, type="fitted")
+resettest(multimodel, power=2:4, type="fitted")
+```
+#Elde edilen sonuçlara göre test istatistiği değeri basit modelin 0.01 ve olasılık değeri 0.90dır. Çok değişkenli modelin de 0.37 ve 0.54. Bu durumda olasılık değeri %5'ten büyük olduğu için Ho red edilemez modelde tanımlama hatası yoktur.
+
+#Hausmann Tanımlama Hatası Testi
+
+    #Bağımsız değişkenler ile modelin kalıntıları arasında bir ilişki varsa bu tanımlama hatasıdır temeli üzerine oturtulmuş bir testtir.
+    # Hausmann testinşn temel hipotezi H0: kalıntılar ile bağımsız değişkenler ilişkisizdir(tanımlama hatası yoktur)
+    #Hausman test istatistiği tutarlı ve tutarsız iki modelin tahmininden elde edilen parametrelerin ve varyanslarının arasındaki farka dayanarak elde edilir. m=parametre farkı/varyans farkı ve ki kare dağılır. m> ki-kare ise ho red edilir.
+    
+```{r}
+#Açıklayıcı değişkenleri önemliden önemsize göre sırala. Temel modeli cbind() içine al. Test edilecek değişkeni en sol tarafta bırak.
+HausmanTest(it, cbind(inft), gdpt)
+```
+# Hausman test isatistiğine göre m test istatistiği 0.87 ve olasılık değeri 0.37dir. H0 red edilemez ve modelde tanımlama hatası yoktur.  
+
+#Yapısal Kararlılık testi: RELS ve Cusum test
+
+    #Zaman serileri bazı nedenlerle ve bazı faktörler tarafından etkilenir ve zaman içinde değişikliğie uğrar(kriz, teknoloji vs.) Zaman serisinde bu seride gözlenen trendin belirli bir dönemden sonra değişikliğie uğraması ile kendini gösterir. Bu etki trendi pozitif ya da negatif yönde değiştirir.
+
+    #Cusum testi paramtrelerin kararlılığını test eder. Yapısal değişiklik öncesi parametrelerin yapısal değişiklikten anlamlı bir şekilde etkilenmesi durumunda yapısal bir değişiklik olduğuna karar verilir.
+
+    #İlk olarak T dönemi için verileri kullandığımızı ve β1 ve β2 tahminlerini elde ederek modeli tahmin ettiğimizi varsayalım. Sonra T+1 verilerini kullanırız ve yine modeli tahmin ederiz ve iki parametrenin tahminlerini elde ederiz.  Sonra T+2 verilerini kullanırız ve  modeli yeniden tahmin ederiz. Bu şekilde, tüm örneklemi tükenene kadar Y ve X üzerine ek bir veri noktası eklemeye devam ediyoruz.
+
+    #Tahmin edebileceğiniz gibi, her regresyon çalıştırması size β1 ve β2'den oluşan yeni bir tahmin kümesi verecektir.  Bu parametrelerin tahmini değerlerini her bir yinelemeye göre çizerseniz, tahmin edilen parametrelerin değerlerinin nasıl değiştiğini göreceksiniz.  İncelenen model yapısal olarak kararlı ise, iki parametrenin tahmini değerlerindeki değişiklikler küçük ve esasen rastgele olacaktır.  Bununla birlikte, parametrelerin tahmin edilen değerleri önemli ölçüde değişirse, yapısal bir kırılmaya işaret eder.  RELS, bu nedenle, zaman kronolojik olarak sıralandığından, zaman serisi verileriyle kullanışlı bir rutindir RELS ayrıca birkaç tanısal testin dayandırıldığı yinelemeli kalıntılar üretir. Cusum'da bu kalıntılar üzerine kuruludur.
+
+Uygulama
+
+```{r}
+#Basit modelin yapısal kırılmasına bakalım
+install.packages("strucchange")
+library(strucchange)
+cusumtestsimple<-efp(its~infts, type="Rec-CUSUM")
+plot(cusumtestsimple)
+
+#Multi modelin yapısal kırılmasına bakalım.
+
+cusumtestmulti<-efp(its~infts+gdpts, type="Rec-CUSUM")
+plot(cusumtestmulti)
+
+```
+
+
+# Basit modelde parametre kararlılığı yok iken çok değişkenli modelde paramtre kararlılığı sağlanmıştır.
+
+#6.6.2 Model Seçme Kriterleri
+
+#Bunlar;
+    #Rakip modeller arasında seçim
+    #Kestirim(forecasting) yapmada modelleri karşılaştırma
+    #Örneklem içi kestirim: Seçili model belirli bir örneklemin verilerine ne kadar uyuyor.
+    #Örneklem dışı kestirim: X’ler ver iken modelin Y’nin gelecek değerlerini ne ölçüde kestirebiliyor.
+
+#amaçlı kullanılır.
+
+    #Sırası ile bu kriterler; R2, Düzeltimiş R2, AIC, BIC, Mallow’s Cp, Kestirimin c2’si
+
+    #Bu kriterlerin hepsi KKT(RSS)’i en düşüğe indiren modeli bulmaya yarar.
+
+
+```{r}
+library(EwR)
+AIC(simplemodel, multimodel)
+BIC(simplemodel, multimodel)
+```
+
+#Multimodel her iki kritere göre de daha düşün KKT'ye sahip olduğu için bu model seçilebilir.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
