@@ -1,0 +1,6 @@
+R ile finansal ver analizi uygulama yönergesi
+
+1) training data dosyası indiriniz.
+2) Bu dosyada konut satışları, faiz ve güven endeksi verileri bulunmakta.
+3) son dersimize dar olan tüm veri işleme süreçlerini yapınız.
+4) Regresyon analizinde bağımlı değişken sizce nedir? Bunu göre regresyon analizinizi yapınız.
