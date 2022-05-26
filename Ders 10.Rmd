@@ -1,0 +1,104 @@
+
+
+
+# Öncelikle gerekli paket ve kütüphane işlemlerini yapalım.
+
+```{r}
+require("readxl")
+library("readxl")
+library(xts)
+require("tsbox")
+library(tsbox)
+require("vtable")
+library(vtable)
+require("tseries")
+library(tseries)
+require("car")
+library(car)
+require("lmtest")
+library(lmtest)
+library(nlme)
+require("fDMA")
+library(fDMA)
+require("strucchange")
+library(strucchange)
+library(EwR)
+```
+
+
+```{r}
+        veri <- read_excel("C:/Users/gamze/OneDrive/Masaüstü/veri.xlsx")
+  #Verileri tek tek değişken haline getirelim     
+         it<-veri$i
+        inft<-veri$inf
+        gdpt<-veri$gdp
+  #Değişkenleri Zaman serisi yapalım.     
+        its=ts(it, frequency = 4, start = c(2006,1))
+        infts=ts(inft, frequency = 4, start = c(2006,1))
+        gdpts=ts(gdpt, frequency = 4, start = c(2006,1))
+  #gdpts ölçek olarak çok büyük olduğu için logaritmik düzeye alalım ve sonra tekrar grafiklere bakalım.
+
+        lgdpts<-log(gdpts)
+        ts_plot(its, infts, lgdpts)
+        
+```
+ 
+#Tahmin: OLS ile doğrusal modelin nokta tahmini
+
+#Sırasıyla  basit ve çok değişkenli regresyon modeli tahmin edelim.
+
+```{r}
+#lm fonsksiyonu bu işi görüyor. Ancak modele de bir ad atayalım. 
+
+simplemodel<-lm(its~infts)
+summary(simplemodel)
+
+#Şimdi de çok değişkenli regresyon modelini çalıştıralım;
+
+#Basit modeli için yaptığımız tüm komutları burada çalıştıralım. 
+multimodel<-lm(its~+infts+lgdpts)
+summary(multimodel)
+```
+
+#6 Hipotez testleri
+
+#Öncelikle modelimizin sonuçlarına tekrardan bakalım. Daha sonra tüm parametrelerin anlamlılığını ve modelin anlamlılığını kontrol edelim. 
+#6.1 Normallik testi: Bunun için elbette t, ki kare F testlerine ihtiyaç var ancak bunların kullanulması için modelin hata teriminin normal dağılıp dağılmadığı kontrol etmek gerekiyor. Kalıntıları hata terimi olarak referans alırsak basit bir histogram ve JB test işimizi görecektir.
+
+
+```{r}
+
+# modelin sunumu
+
+summary(multimodel)
+
+#kalınıların dağılım grafiği
+
+hist(uhat)
+
+jarque.bera.test(uhat)
+
+```
+##JB test: Normal bir dağılımda Skewness=0 kurtosis=3'tür. JB testi bunun üzerine gelişitirilmi ve test istatistiği ki kare'dir. Test 
+
+$$JB=n*[S^2/6 +(K-3)^2/24] ve H_0:JB=0(yani kalıntılar normal dağılmıştır)$$
+#Şİmdi JB testi modelimiz için yapalım.
+
+```{r}
+#Bunun için önce tseries paketi yüklenir ve kütüphane çağrılır. İlgili kod çağrılır.
+install.packages("tseries")
+library(tseries)
+jarque.bera.test(uhat)
+
+```
+#Görüldüğü üzere test istatistiği ve p değerine bakarak H0 hipotezi red edilmemez. Bu durumda hata(kalıntılar) normal dağılmıştır diyebiliriz.
+
+#Sonuç olarak model sunumundaki t ve F değerleri artık güveenilirdir ve yorumlanabilir.
+
+#Teşhis tesleri
+
+#1) otokorelasyon testi: DB, BG testleri ve son olarak GLS yaklaşımını gördük.
+
+
+
+
